@@ -35,7 +35,7 @@ jobs:
             exit 1
           fi
         
-          # 3. URL'deki boşlukları %20 ile değiştir (Malformed input hatasını önler)
+          # 3. URL'deki boşlukları %20 ile değiştir
           ENCODED_URL=$(echo "$DOWNLOAD_URL" | sed 's/ /%20/g')
           
           echo "⬇️ Dosya indiriliyor..."
@@ -47,11 +47,18 @@ jobs:
         env:
           NEXUS_API_KEY: ${{ secrets.NEXUS_API_KEY }}
 
+      # YENİ ADIM: Tarih formatlarını güvenli bir şekilde GitHub ortam değişkenlerine yazıyoruz
+      - name: Set Release Version & Name
+        id: vars
+        run: |
+          echo "TAG_VERSION=v$(date +'%Y%m%d-%H%M')" >> $GITHUB_ENV
+          echo "RELEASE_NAME=DLSS Enabler - $(date +'%Y-%m-%d %H:%M')" >> $GITHUB_ENV
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v$(date +'%Y%m%d-%H%M')"
-          name: "DLSS Enabler - $(date +'%Y-%m-%d %H:%M')"
+          tag_name: ${{ env.TAG_VERSION }}
+          name: ${{ env.RELEASE_NAME }}
           draft: false
           prerelease: false
           files: DLSS_Enabler.zip
