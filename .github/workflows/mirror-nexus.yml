@@ -18,26 +18,29 @@ jobs:
       - name: Download from Nexus Mods
         run: |
           echo "🔄 Nexus download link alınıyor..."
-          
+         
           # 1. Download link JSON'ini al
           JSON=$(curl -s -H "APIKEY: ${{ secrets.NEXUS_API_KEY }}" \
             "https://api.nexusmods.com/v1/games/site/mods/757/files/8056/download_link.json")
-          
+         
           echo "📥 JSON Response:"
           echo "$JSON" | jq || echo "$JSON"
-          
-          # 2. JSON'dan gerçek download URL'sini çıkar (DÜZELTİLDİ)
+         
+          # 2. JSON'dan gerçek download URL'sini çıkar
           DOWNLOAD_URL=$(echo "$JSON" | jq -r '.[0].URI')
-          
+         
           if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
             echo "❌ Download URL alınamadı!"
             echo "API Response: $JSON"
             exit 1
           fi
-         
-          echo "⬇️ Dosya indiriliyor: $DOWNLOAD_URL"
-          curl -L -o "DLSS_Enabler.zip" "$DOWNLOAD_URL" --fail --silent --show-error
-         
+        
+          # 3. URL'deki boşlukları %20 ile değiştir (Malformed input hatasını önler)
+          ENCODED_URL=$(echo "$DOWNLOAD_URL" | sed 's/ /%20/g')
+          
+          echo "⬇️ Dosya indiriliyor..."
+          curl -L -o "DLSS_Enabler.zip" "$ENCODED_URL" --fail --silent --show-error
+        
           echo "📊 İndirilen dosya bilgisi:"
           ls -la DLSS_Enabler.zip
           file DLSS_Enabler.zip
