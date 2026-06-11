@@ -1,9 +1,12 @@
 name: Mirror Nexus Mods to GitHub Release
 
+permissions:
+  contents: write   # ← Bu satır çok önemli
+
 on:
-  workflow_dispatch:  # Manuel tetikle
+  workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'  # Her gün saat 03:00'te (isteğe göre değiştir)
+    - cron: '0 3 * * *'
 
 jobs:
   download-and-release:
@@ -15,25 +18,20 @@ jobs:
 
       - name: Download from Nexus Mods
         run: |
-          # Nexus Mods dosyasını indir (API ile kısa süreli download link alınıyor)
           curl -L -o "DLSS_Enabler.zip" \
-            -H "APIKEY: ${{ secrets.NEXUS_API_KEY }}" \
-            "https://api.nexusmods.com/v1/games/site/mods/757/files/8056/download.json"
+            "https://api.nexusmods.com/v1/games/site/mods/757/files/8056/download.json?api_key=${{ secrets.NEXUS_API_KEY }}"
           
-          # Dosya adını ve boyutunu kontrol et
           ls -la DLSS_Enabler.zip
         env:
           NEXUS_API_KEY: ${{ secrets.NEXUS_API_KEY }}
 
-      - name: Get version and create release
-        id: create_release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v$(date +'%Y%m%d')"   # Günlük versiyon (istediğin gibi değiştirebilirsin)
-          name: "DLSS Enabler - ${{ github.run_date }}"
+          tag_name: "v$(date +'%Y%m%d-%H%M')"
+          name: "DLSS Enabler - $(date +'%Y-%m-%d')"
           draft: false
           prerelease: false
-          files: |
-            DLSS_Enabler.zip
+          files: DLSS_Enabler.zip
         env:
-          GB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
