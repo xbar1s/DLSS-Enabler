@@ -6,12 +6,11 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * *'   # Her gün 04:00
+    - cron: '0 4 * * *' # Her gün 04:00
 
 jobs:
   download-and-release:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,18 +26,18 @@ jobs:
           echo "📥 JSON Response:"
           echo "$JSON" | jq || echo "$JSON"
           
-          # 2. JSON'dan gerçek download URL'sini çıkar
-          DOWNLOAD_URL=$(echo "$JSON" | jq -r '.url')
+          # 2. JSON'dan gerçek download URL'sini çıkar (DÜZELTİLDİ)
+          DOWNLOAD_URL=$(echo "$JSON" | jq -r '.[0].URI')
           
           if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
             echo "❌ Download URL alınamadı!"
             echo "API Response: $JSON"
             exit 1
           fi
-          
-          echo "⬇️ Dosya indiriliyor..."
+         
+          echo "⬇️ Dosya indiriliyor: $DOWNLOAD_URL"
           curl -L -o "DLSS_Enabler.zip" "$DOWNLOAD_URL" --fail --silent --show-error
-          
+         
           echo "📊 İndirilen dosya bilgisi:"
           ls -la DLSS_Enabler.zip
           file DLSS_Enabler.zip
